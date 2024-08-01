@@ -1,0 +1,467 @@
+Default:
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+//Use SQL Client and Data Systems
+using System.Data.SqlClient;
+using System.Data;
+
+namespace Assessment_Practical2_37489917
+{
+    public partial class Default : System.Web.UI.Page
+    {
+        //Declare global connection string with path to Viewers database
+        public string viewers = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\johnc\Desktop\Assessment_Practical2_37489917\Assessment_Practical2_37489917\App_Data\Viewers.mdf;Integrated Security=True";
+
+        //Declare variables
+        SqlConnection connViewers;
+        SqlCommand commViewers;
+        SqlDataReader readerViewers;
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            //Connect to the Viewers and Staff databases
+            connViewers = new SqlConnection(viewers);
+        }
+
+        protected void btnViewerLogin_Click(object sender, EventArgs e)
+        {
+            //Open the connection
+            connViewers.Open();
+
+            //Initialize variables and select all fields from the Viewers database
+            string sql = "SELECT * FROM Viewers";
+            commViewers = new SqlCommand(sql, connViewers);
+
+            //Read the data
+            readerViewers = commViewers.ExecuteReader();
+
+            //While-loop to loop through the data
+            while (readerViewers.Read())
+            {
+                //If-else-if statement to confirm that correct data has been entered in the textboxes
+                if (txtViewerUser.Text == readerViewers.GetValue(1).ToString() && txtViewerPass.Text == readerViewers.GetValue(2).ToString() && txtViewerEmail.Text == readerViewers.GetValue(3).ToString() && txtNumber.Text == readerViewers.GetValue(4).ToString())
+                {
+                    //Declare new cookie variables and assign them to their textboxes
+                    HttpCookie cookie = new HttpCookie("viewerInfo");
+                    cookie["Username"] = txtViewerUser.Text;
+                    cookie["Password"] = txtViewerPass.Text;
+                    cookie["Email"] = txtViewerEmail.Text;
+                    cookie["PhoneNumber"] = txtNumber.Text;
+
+                    //Load new Booking form as cookie
+                    Response.Cookies.Add(cookie);
+                    Response.Redirect("Booking.aspx");
+                }
+            }
+
+            //Close the connection
+            connViewers.Close();
+        }
+
+        protected void btnStaffLogin_Click(object sender, EventArgs e)
+        {
+           
+        }
+
+        protected void btnLoginStaff_Click(object sender, EventArgs e)
+        {
+            
+        }
+    }
+}
+
+
+Staff:
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+//Use SQL Client and Data Systems
+using System.Data.SqlClient;
+using System.Data;
+
+namespace Assessment_Practical2_37489917
+{
+    public partial class Staff : System.Web.UI.Page
+    {
+        //Declare global connection string with path to Viewers database
+        public string connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\johnc\Desktop\Assessment_Practical2_37489917\Assessment_Practical2_37489917\App_Data\Staff.mdf;Integrated Security=True";
+
+        //Declare variables
+        SqlConnection connection;
+        SqlCommand command;
+        SqlDataReader dataReader;
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            //Connect to the Staff database
+            connection = new SqlConnection(connectionString);
+        }
+
+        protected void btnLogin_Click(object sender, EventArgs e)
+        {
+            //Open the connection
+            connection.Open();
+
+            //Initialize variables and select all fields from the Staff database
+            string sql = "SELECT * FROM Staff";
+            command = new SqlCommand(sql, connection);
+
+            //Read the data
+            dataReader = command.ExecuteReader();
+
+            //While-loop to loop through the data
+            while (dataReader.Read())
+            {
+                //If-else-if statement to confirm that correct data has been entered in the textboxes
+                if (txtUsername.Text == dataReader.GetValue(1).ToString() && txtPassword.Text == dataReader.GetValue(2).ToString() && txtEmail.Text == dataReader.GetValue(3).ToString() && txtNumber.Text == dataReader.GetValue(4).ToString())
+                {
+                    //Declare new cookie variables and assign them to their textboxes
+                    HttpCookie cookie = new HttpCookie("staffInfo");
+                    cookie["Username"] = txtUsername.Text;
+                    cookie["Password"] = txtPassword.Text;
+                    cookie["Email"] = txtEmail.Text;
+                    cookie["PhoneNumber"] = txtNumber.Text;
+
+                    //Load new Booking form as cookie
+                    Response.Cookies.Add(cookie);
+                    Response.Redirect("Maintain.aspx");
+                }
+            }
+
+            //Close the connection
+            connection.Close();
+        }
+    }
+}
+
+
+Maintain:
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+//Use SQL Client and Data Systems
+using System.Data.SqlClient;
+using System.Data;
+
+namespace Assessment_Practical2_37489917
+{
+    public partial class Maintain : System.Web.UI.Page
+    {
+        //Declare global connection string with path to Movies database
+        public string connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\johnc\Desktop\Assessment_Practical2_37489917\Assessment_Practical2_37489917\App_Data\Movies.mdf;Integrated Security=True";
+
+        //Declare variables
+        SqlConnection connection;
+        SqlCommand command;
+        SqlDataAdapter dataAdapter;
+        DataSet dataSet;
+
+        //Declare public string for Genre
+        public string genre = "";
+
+        //Method to load new data on the datagrid
+        protected void loadAll()
+        {
+            //Declare variables
+            dataAdapter = new SqlDataAdapter();
+            dataSet = new DataSet();
+
+            //Initialize variables and display all fields from the Movies table
+            string sql = "SELECT * FROM Movies";
+            command = new SqlCommand(sql, connection);
+
+            //Fill the dataset
+            dataAdapter.SelectCommand = command;
+            dataAdapter.Fill(dataSet, "Movies");
+
+            //Move data to datagrid
+            dgvMovies.DataSource = dataSet;
+            dgvMovies.DataBind();
+        }
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            //Connect to the database
+            connection = new SqlConnection(connectionString);
+
+            //Open the connection
+            connection.Open();
+
+            //Load new data
+            loadAll();
+
+            //Close the connection
+            connection.Close();
+        }
+
+        protected void txtSearch_TextChanged(object sender, EventArgs e)
+        {
+            
+        }
+
+        protected void btnInsert_Click(object sender, EventArgs e)
+        {
+           
+            //Open the connection
+            connection.Open();
+
+            //Initialize variables and display all fields from the Movies table
+            string sql = $"INSERT INTO Movies(Title, Genre, Rating, Price) VALUES('{txtTitle.Text}', '{Session["Genre"]}', '{txtRating.Text}', '{txtPrice.Text}')";
+            command = new SqlCommand(sql, connection);
+
+            //Execute deleting data
+            dataAdapter = new SqlDataAdapter();
+            dataAdapter.InsertCommand = command;
+            dataAdapter.InsertCommand.ExecuteNonQuery();
+
+            //Load new data
+            loadAll();
+
+            //Close the connection
+            connection.Close();
+        }
+
+        protected void btnUpdate_Click(object sender, EventArgs e)
+        {
+            
+            //Open the connection
+            connection.Open();
+
+            //Initialize variables and display all fields from the Movies table
+            string sql = $"UPDATE Movies SET Genre = '{Session["Genre"]}', Rating = '{txtRating.Text}', Price = '{txtPrice.Text}' WHERE Title = '{txtTitle.Text}'";
+            command = new SqlCommand(sql, connection);
+
+            //Execute deleting data
+            dataAdapter = new SqlDataAdapter();
+            dataAdapter.InsertCommand = command;
+            dataAdapter.InsertCommand.ExecuteNonQuery();
+
+            //Load new data
+            loadAll();
+
+            //Close the connection
+            connection.Close();
+        }
+
+        protected void btnDelete_Click(object sender, EventArgs e)
+        {
+            //Open the connection
+            connection.Open();
+
+            //Initialize variables and display all fields from the Movies table
+            string sql = $"DELETE FROM Movies WHERE Title = '{txtDelete.Text}'";
+            command = new SqlCommand(sql, connection);
+
+            //Execute deleting data
+            dataAdapter = new SqlDataAdapter();
+            dataAdapter.DeleteCommand = command;
+            dataAdapter.DeleteCommand.ExecuteNonQuery();
+
+            //Load new data
+            loadAll();
+
+            //Close the connection
+            connection.Close();
+        }
+
+        protected void Button1_Click(object sender, EventArgs e)
+        {
+            //Open the connection
+            connection.Open();
+
+            //Declare variables
+            dataAdapter = new SqlDataAdapter();
+            dataSet = new DataSet();
+
+            //Initialize variables and display all fields from the Movies table
+            string sql = $"SELECT * FROM Movies WHERE Title LIKE '%{txtSearch.Text}%' OR Genre LIKE '%{txtSearch.Text}%' OR Rating LIKE '%{txtSearch.Text}%'";
+            command = new SqlCommand(sql, connection);
+
+            //Fill the dataset
+            dataAdapter.SelectCommand = command;
+            dataAdapter.Fill(dataSet, "Movies");
+
+            //Move data to datagrid
+            dgvMovies.DataSource = dataSet;
+            dgvMovies.DataBind();
+
+            //Close the connection
+            connection.Close();
+        }
+
+        protected void rdbAction_CheckedChanged(object sender, EventArgs e)
+        {
+            //Set genre to Action
+            Session["Genre"] = rdbAction.Text;
+        }
+
+        protected void rdbAdventure_CheckedChanged(object sender, EventArgs e)
+        {
+            //Set genre to Adventure
+            Session["Genre"] = rdbAdventure.Text;
+        }
+
+        protected void rdbDrama_CheckedChanged(object sender, EventArgs e)
+        {
+            //Set genre to Drama
+            Session["Genre"] = rdbDrama.Text;
+        }
+
+        protected void rdbComedy_CheckedChanged(object sender, EventArgs e)
+        {
+            //Set genre to Comedy
+            Session["Genre"] = rdbComedy.Text;
+        }
+
+        protected void rdbHorror_CheckedChanged(object sender, EventArgs e)
+        {
+            //Set genre to Horror
+            Session["Genre"] = rdbHorror.Text;
+        }
+
+        protected void rdbRomance_CheckedChanged(object sender, EventArgs e)
+        {
+            //Set genre to Romance
+            Session["Genre"] = rdbRomance.Text;
+        }
+    }
+}
+
+
+Booking:
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+//Use SQL Client and Data Systems
+using System.Data.SqlClient;
+using System.Data;
+
+namespace Assessment_Practical2_37489917
+{
+    public partial class Booking : System.Web.UI.Page
+    {
+        //Declare global connection string with path to Movies database
+        public string connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\johnc\Desktop\Assessment_Practical2_37489917\Assessment_Practical2_37489917\App_Data\Movies.mdf;Integrated Security=True";
+
+        //Declare variables
+        SqlConnection connection;
+        SqlCommand command;
+        SqlDataAdapter dataAdapter;
+        SqlDataReader dataReader;
+        DataSet dataSet;
+
+        //Declare public string for Genre
+        public string genre = "";
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            //Set the current date
+            Calendar1.SelectedDate = DateTime.Today;
+
+            //Connect to the Movies database
+            connection = new SqlConnection(connectionString);
+
+            //Open the connection
+            connection.Open();
+
+            //Initialize variables and display all fields from the Movies table
+            string sql = "SELECT * FROM Movies";
+            command = new SqlCommand(sql, connection);
+
+            //Read the data
+            dataReader = command.ExecuteReader();
+
+            //Add header to the listbox
+            lstbMovies.Items.Clear();
+            lstbMovies.Items.Add("Available Movies");
+            lstbMovies.Items.Add("Title \t (Genre) \t (Rating) \t (Price)");
+            lstbMovies.Items.Add("______________________________________________________________________________________________________________________________________________________");
+
+            //While loop to loop through the data
+            while (dataReader.Read())
+            {
+                lstbMovies.Items.Add(dataReader.GetValue(1) + " \t (" + dataReader.GetValue(2) + ") \t (" + dataReader.GetValue(3) + ") \t (R " + dataReader.GetValue(4) + ")");
+            }
+
+            //Close the connection
+            connection.Close();
+        }
+
+        protected void Calendar1_SelectionChanged(object sender, EventArgs e)
+        {
+            
+        }
+
+        protected void btnConfirm_Click(object sender, EventArgs e)
+        {
+            //Declare date variable
+            DateTime theDate = Calendar1.SelectedDate;
+
+            //Assign value to string
+            string movie = "";
+
+
+            //If-else statements to display only the current and future dates
+            if (theDate == DateTime.Today || theDate > DateTime.Today)
+            {
+                //Assign variable to its textbox
+                movie = txtMovie.Text;
+
+                //Open the connection
+                connection.Open();
+
+                //Declare variables
+                dataAdapter = new SqlDataAdapter();
+                dataSet = new DataSet();
+
+                //Initialize variables and display all fields from the Movies table
+                string sql = $"SELECT * FROM Movies WHERE Title LIKE '%{movie}%'";
+                command = new SqlCommand(sql, connection);
+
+                //Read the data
+                dataReader = command.ExecuteReader();
+
+                //While loop to loop through the data
+                while (dataReader.Read())
+                {
+                    //Display the chosen date on the listbox with the selected movie title
+                    lblDisplay.Text = dataReader.GetValue(1) + " BOOKED FOR: " + theDate.DayOfWeek + ", " + theDate.ToShortDateString();
+                    lblDays.Text = "Come watch another movie again at " + theDate.AddDays(3).ToLongDateString() + " to earn a 50% DISCOUNT on any movie!!!";
+                }
+
+                //Close the connection
+                connection.Close();
+
+                
+            }
+
+            
+            else
+            {
+                //Display error label message 
+                lblDisplay.Text = "Please select Today or Any Upcoming day";
+            }
+            
+
+            //Set focus back to the textbox
+            lstbMovies.Focus();
+        }
+    }
+}
